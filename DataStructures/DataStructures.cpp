@@ -1,69 +1,98 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
-bool isPrime(int number) {
-    if (number <= 1) {
-        return false;
-    }
-    if (number == 2) {
-        return true;
-    }
-    for (int i = 2; i <= sqrt(number) + 1; i++) {
-        if (number % 1 == 0) {
-            return false;
+bool isSet(std::vector<int>& vec) {
+    for (int i = 0; i < vec.size() - 1; i++) {
+        for (int j = i + 1; j < vec.size(); j++) {
+            if (vec[i] == vec[j]) {
+                return false;
+            }
         }
     }
+
     return true;
 }
 
-
-
-int main()
-{
-    int prime;
-
-    // print 40 primes
-    for (int n = 0; n <= 39; n++) {
-        prime = n * n + n + 41;
-        std::cout << prime << std::endl;
+std::vector<int> setUnion(std::vector<int>& vec1, std::vector<int>& vec2) {
+    std::vector<int> unifiedVec = vec1;
+    
+    std::vector<int>::iterator it;
+    for (auto i : vec2) {
+        it = find(vec1.begin(), vec1.end(), i);
+        if (it == vec1.end()) {
+            unifiedVec.push_back(i);
+        }
     }
 
-    std::cout << std::endl;
+    return unifiedVec;
+}
 
-    // print 80 primes
-    for (int n = 0; n <= 79; n++) {
-        prime = n * n - 78*n + 1601;
-        std::cout << prime << std::endl;
-    }
+std::vector<int> setIntersecting(std::vector<int>& vec1, std::vector<int>& vec2) {
+    std::vector<int> intersectingVec;
 
-    std::cout << std::endl;
-
-    // Project Euler 27 
-    // n^2 + a*n + b
-    // find a and b for consecutive n
-    int a_min = -999;
-    int b_min = -1000;
-    int a_max = 999;
-    int b_max = 1000;
-    int consecutive = 0;
-    int ideal_a;
-    int ideal_b;
-    int n;
-    for (int a = a_min;  a <= a_max; a++) {
-        for (int b = b_min; b <= b_max; b++) {
-            n = 0;
-            while (isPrime(n * n + a * n + b)) {
-                n++;
-            }
-
-            if (consecutive < n) {
-                consecutive = n;
-                ideal_a = a;
-                ideal_b = b;
+    for (auto i : vec1) {
+        for (auto j : vec2) {
+            if (i == j) {
+                intersectingVec.push_back(i);
             }
         }
     }
-    std::cout << ideal_a << std::endl;
-    std::cout << ideal_b << std::endl;
-    std::cout << consecutive << std::endl;
+
+    return intersectingVec;
+}
+
+std::vector<int> setDifference(std::vector<int>& vec1, std::vector<int>& vec2) {
+    std::vector<int> differenceVec;
+
+    std::vector<int>::iterator it;
+    for (auto i : vec1) {
+        it = find(vec2.begin(), vec2.end(), i);
+        if (it == vec2.end()) {
+            differenceVec.push_back(i);
+        }
+    }
+
+    return differenceVec;
+}
+
+int main()
+{
+    // is set
+    std::vector<int> vec1 = { 1,4,5,6,1 };
+    bool isSetBool = isSet(vec1);
+
+    std::cout << "isSet " << isSetBool << std::endl;
+
+
+    // union
+    std::vector<int> vec2 = { 1,2,3,4 };
+    std::vector<int> vec3 = { 2,4,5,6 };
+    std::vector<int> unifiedVec = setUnion(vec2, vec3);
+
+    std::cout << "unified ";
+    for (auto x : unifiedVec) {
+        std::cout << x << ", ";
+    }
+    std::cout << std::endl;
+
+
+    // intersection
+    std::vector<int> intersectingVec = setIntersecting(vec2, vec3);
+
+    std::cout << "intersecting ";
+    for (auto x : intersectingVec) {
+        std::cout << x << ", ";
+    }
+    std::cout << std::endl;
+
+
+    // difference
+    std::vector<int> differenceVec = setDifference(vec3, vec2);
+
+    std::cout << "difference ";
+    for (auto x : differenceVec) {
+        std::cout << x << ", ";
+    }
+    std::cout << std::endl;
 }
