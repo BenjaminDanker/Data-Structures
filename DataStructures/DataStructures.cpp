@@ -1,98 +1,76 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <numeric>
 
-bool isSet(std::vector<int>& vec) {
-    for (int i = 0; i < vec.size() - 1; i++) {
-        for (int j = i + 1; j < vec.size(); j++) {
-            if (vec[i] == vec[j]) {
-                return false;
+// TODO: implement this function to return a Pascal Triangle
+std::vector<std::vector<int>> pascalTriangle(int row) {
+
+    std::vector<std::vector<int>> triangle;
+
+    for (int i = 0; i <= row; i++) {
+        triangle.push_back({});
+        int a = 1;
+        for (int j = 0; j < i+1; j++) {
+            if (j == 0) {
+                triangle[i].push_back(1);
             }
-        }
-    }
-
-    return true;
-}
-
-std::vector<int> setUnion(std::vector<int>& vec1, std::vector<int>& vec2) {
-    std::vector<int> unifiedVec = vec1;
-    
-    std::vector<int>::iterator it;
-    for (auto i : vec2) {
-        it = find(vec1.begin(), vec1.end(), i);
-        if (it == vec1.end()) {
-            unifiedVec.push_back(i);
-        }
-    }
-
-    return unifiedVec;
-}
-
-std::vector<int> setIntersecting(std::vector<int>& vec1, std::vector<int>& vec2) {
-    std::vector<int> intersectingVec;
-
-    for (auto i : vec1) {
-        for (auto j : vec2) {
-            if (i == j) {
-                intersectingVec.push_back(i);
+            else {
+                triangle[i].push_back(a);
             }
+            a = a * (i - j) / (j + 1);
         }
     }
 
-    return intersectingVec;
+    return triangle;
 }
 
-std::vector<int> setDifference(std::vector<int>& vec1, std::vector<int>& vec2) {
-    std::vector<int> differenceVec;
+// TODO: implement this function to print Pascal Triangles 
+void printPascalTriangle(const std::vector<std::vector<int>>& triangle) {
+    for (int i = 0; i <= 8; i++) {
+        for (int j = 0; j <= i; j++) {
+            std::cout << triangle[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
 
-    std::vector<int>::iterator it;
-    for (auto i : vec1) {
-        it = find(vec2.begin(), vec2.end(), i);
-        if (it == vec2.end()) {
-            differenceVec.push_back(i);
+// TODO: implement this function to return comparison result. See main() for usage. 
+std::vector<bool> compare(const std::vector<std::vector<int>>& triangle,
+    const std::vector<int> allegedSummations) {
+    std::vector<bool> equalVec;
+
+    int rowSum = 0;
+    for (int i = 0; i <= allegedSummations.size()-1; i++) {
+        rowSum = std::accumulate(triangle[i].begin(), triangle[i].end(), 0);
+        
+        if (rowSum == allegedSummations[i]) {
+            equalVec.push_back(true);
+        }
+        else {
+            equalVec.push_back(false);
         }
     }
 
-    return differenceVec;
+    return equalVec;
 }
+
 
 int main()
 {
-    // is set
-    std::vector<int> vec1 = { 1,4,5,6,1 };
-    bool isSetBool = isSet(vec1);
-
-    std::cout << "isSet " << isSetBool << std::endl;
-
-
-    // union
-    std::vector<int> vec2 = { 1,2,3,4 };
-    std::vector<int> vec3 = { 2,4,5,6 };
-    std::vector<int> unifiedVec = setUnion(vec2, vec3);
-
-    std::cout << "unified ";
-    for (auto x : unifiedVec) {
-        std::cout << x << ", ";
-    }
+    // part 1: generate and print Pascal Triangle
+    int rows = 8;
+    auto triangle = pascalTriangle(rows);
+    printPascalTriangle(triangle);
     std::cout << std::endl;
 
-
-    // intersection
-    std::vector<int> intersectingVec = setIntersecting(vec2, vec3);
-
-    std::cout << "intersecting ";
-    for (auto x : intersectingVec) {
-        std::cout << x << ", ";
+    // part 2: check alleged summations
+    // expected returrn: {1, 1, 0, 1, 0, 1, 0, 1, 1, 0}
+    std::vector<int> allegedSum{ 1, 2, 5, 8, 17, 32, 65, 128, 256, 511 };
+    auto sumCheck = compare(pascalTriangle(allegedSum.size()), allegedSum);
+    for (auto b : sumCheck) {
+        std::cout << b << " ";
     }
+
     std::cout << std::endl;
 
-
-    // difference
-    std::vector<int> differenceVec = setDifference(vec3, vec2);
-
-    std::cout << "difference ";
-    for (auto x : differenceVec) {
-        std::cout << x << ", ";
-    }
-    std::cout << std::endl;
 }
