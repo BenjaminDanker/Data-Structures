@@ -1,79 +1,137 @@
 #include <iostream>
 #include <vector>
 #include <numeric>
+#include <stdexcept>
 
 
-std::vector<std::vector<int>> pascalTriangle(int row) {
+template <typename T> class MyVector {
+private:
+    T* arr;
+    size_t size;
+    size_t capacity;
+public:
+    MyVector() : arr{ nullptr }, size{ 0 }, capacity{ 0 } {};
 
-    std::vector<std::vector<int>> triangle;
+    explicit MyVector(size_t initialCapacity) : arr{ nullptr }, capacity {initialCapacity} {
+        arr = new T[capacity];
+    }
 
-    // row iteration
-    for (int i = 0; i <= row; i++) {
-        triangle.push_back({});
-        int a = 1;
-        // column iteration
-        for (int j = 0; j < i+1; j++) {
-            // start of triangle
-            if (j == 0) {
-                triangle[i].push_back(1);
+    ~MyVector() {
+        delete[] arr;
+    }
+
+    size_t getSize() const {
+        return size;
+    }
+
+    bool isEmpty() const {
+        return(size == 0);
+    }
+
+    int& operator[](size_t index) {
+        if (index >= size) {
+            throw std::out_of_range("Index out of range");
+        }
+        
+        return arr[index];
+    }
+
+    template <typename T> void pushBack(T element) {
+        if (size == capacity) {
+            if (capacity == 0) {
+                capacity = 1;
             }
             else {
-                triangle[i].push_back(a);
+                capacity = capacity * 2;
             }
-            // number in triangle is equal to the sum of the two numbers above it
-            a = a * (i - j) / (j + 1);
+
+            // create new array and copy elements
+            int* newArr = new T[capacity];
+            for (size_t i = 0; i < size; i++) {
+                newArr[i] = arr[i];
+            }
+            delete[] arr;
+            arr = newArr;
         }
+
+        arr[size] = element;
+        size++;
     }
 
-    return triangle;
-}
+    template <typename T> void insert(size_t index, T value) {
+        if (size == capacity) {
+            if (capacity == 0) {
+                capacity = 1;
+            }
+            else {
+                capacity = capacity * 2;
+            }
 
-void printPascalTriangle(const std::vector<std::vector<int>>& triangle) {
-    for (int i = 0; i <= 8; i++) {
-        for (int j = 0; j <= i; j++) {
-            std::cout << triangle[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
+            // create new array with elements before insert index
+            int* newArr = new T[capacity];
+            for (size_t i = 0; i < index; i++) {
+                newArr[i] = arr[i];
+            }
 
-std::vector<bool> compare(const std::vector<std::vector<int>>& triangle,
-    const std::vector<int> allegedSummations) {
-    std::vector<bool> equalVec;
+            newArr[index] = value;
 
-    int rowSum = 0;
-    // row iteration
-    for (int i = 0; i <= allegedSummations.size()-1; i++) {
-        rowSum = std::accumulate(triangle[i].begin(), triangle[i].end(), 0);
-        
-        if (rowSum == allegedSummations[i]) {
-            equalVec.push_back(true);
+            // put elements after insert into array
+            for (size_t i = index; i < size; i++) {
+                newArr[i + 1] = arr[i];
+            }
+
+            delete[] arr;
+            arr = newArr;
         }
         else {
-            equalVec.push_back(false);
+            // move elements to right of insert index
+            for (size_t i = size; i > index; --i) {
+                arr[i] = arr[i - 1];
+            }
+
+            arr[index] = value;
+            size++;
         }
     }
 
-    return equalVec;
-}
+    void popBack() {
+        if (size > 0) {
+            size--;
+        }
+    }
+
+    void erase(size_t index) {
+        // create new array with elements before index
+        int* newArr = new T[capacity];
+        for (size_t i = 0; i < index; i++) {
+            newArr[i] = arr[i];
+        }
+
+        // put elements into erased index
+        for (size_t i = index; i < size; i++) {
+            newArr[i] = arr[i - 1];
+        }
+
+        delete[] arr;
+        arr = newArr;
+
+        size--;
+    }
+};
 
 
 int main()
 {
-    // part 1: generate and print Pascal Triangle
-    int rows = 8;
-    auto triangle = pascalTriangle(rows);
-    printPascalTriangle(triangle);
-    std::cout << std::endl;
+    MyVector<int> vec; 
 
-    // part 2: check alleged summations
-    // expected returrn: {1, 1, 0, 1, 0, 1, 0, 1, 1, 0}
-    std::vector<int> allegedSum{ 1, 2, 5, 8, 17, 32, 65, 128, 256, 511 };
-    auto sumCheck = compare(pascalTriangle(allegedSum.size()), allegedSum);
-    for (auto b : sumCheck) {
-        std::cout << b << " ";
+    vec.pushBack(2);
+    vec.pushBack(3);
+    vec.pushBack(4);
+    vec.insert(3, 5);
+    vec.erase(3);
+
+    for (int i = 0; i < vec.getSize(); i++) {
+        std::cout << vec[i] << std::endl;
     }
-
-    std::cout << std::endl;
 
 }
