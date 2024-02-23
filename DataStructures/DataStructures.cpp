@@ -4,134 +4,197 @@
 #include <stdexcept>
 
 
-template <typename T> class MyVector {
+struct Node {
+    int data;
+    Node* next;
+};
+
+class LinkedList {
 private:
-    T* arr;
-    size_t size;
-    size_t capacity;
+    int count;
+    Node* begin;
+
+    Node* makeNode(const int value) {
+        Node* newNode = new Node;
+
+        newNode->data = value;
+        newNode->next = nullptr;
+
+        return newNode;
+    }
 public:
-    MyVector() : arr{ nullptr }, size{ 0 }, capacity{ 0 } {};
+    LinkedList() : count{ 0 }, begin{ nullptr } {}
 
-    explicit MyVector(size_t initialCapacity) : arr{ nullptr }, capacity {initialCapacity} {
-        arr = new T[capacity];
-    }
+    ~LinkedList() {
+        Node* del = begin;
 
-    ~MyVector() {
-        delete[] arr;
-    }
-
-    size_t getSize() const {
-        return size;
-    }
-
-    bool isEmpty() const {
-        return(size == 0);
-    }
-
-    int& operator[](size_t index) {
-        if (index >= size) {
-            throw std::out_of_range("Index out of range");
+        while (begin != nullptr) {
+            begin = begin->next;
+            delete del;
+            del = begin;
         }
-        
-        return arr[index];
     }
 
-    template <typename T> void pushBack(T element) {
-        if (size == capacity) {
-            if (capacity == 0) {
-                capacity = 1;
-            }
-            else {
-                capacity = capacity * 2;
-            }
-
-            // create new array and copy elements
-            int* newArr = new T[capacity];
-            for (size_t i = 0; i < size; i++) {
-                newArr[i] = arr[i];
-            }
-            delete[] arr;
-            arr = newArr;
+    void insert(int pos, int value) {
+        if (pos < 0 || pos > count) {
+            throw std::out_of_range("Position is out of range");
         }
 
-        arr[size] = element;
-        size++;
-    }
-
-    template <typename T> void insert(size_t index, T value) {
-        if (size == capacity) {
-            if (capacity == 0) {
-                capacity = 1;
-            }
-            else {
-                capacity = capacity * 2;
-            }
-
-            // create new array with elements before insert index
-            int* newArr = new T[capacity];
-            for (size_t i = 0; i < index; i++) {
-                newArr[i] = arr[i];
-            }
-
-            newArr[index] = value;
-
-            // put elements after insert into array
-            for (size_t i = index; i < size; i++) {
-                newArr[i + 1] = arr[i];
-            }
-
-            delete[] arr;
-            arr = newArr;
+        Node* add = makeNode(value);
+        if (pos == 0) {
+            add->next = begin;
+            begin = add;
         }
         else {
-            // move elements to right of insert index
-            for (size_t i = size; i > index; --i) {
-                arr[i] = arr[i - 1];
+            Node* cur = begin;
+
+            for (int i = 1; i < pos; i++) {
+                cur = cur->next;
             }
+            add->next = cur->next;
+            cur->next = add;
+        }
 
-            arr[index] = value;
-            size++;
+        count++;
+    }
+
+    LinkedList mergeSortedLists(LinkedList& list2) {
+        LinkedList list3;
+        Node* cur1 = begin;
+        Node* cur2 = list2.begin;
+
+        int i = 0;
+        while (cur1 != nullptr && cur2 != nullptr) {
+            if (cur1->data < cur2->data) {
+                list3.insert(i, cur1->data);
+                cur1 = cur1->next;
+
+                i++;
+            }
+            else if(cur1->data > cur2->data) {
+                list3.insert(i, cur2->data);
+                cur2 = cur2->next;
+
+                i++;
+            }
+            else if (cur1->data == cur2->data) {
+                list3.insert(i, cur1->data);
+                cur1 = cur1->next;
+                i++;
+
+                list3.insert(i, cur2->data);
+                cur2 = cur2->next;
+                i++;
+            }
+        };
+
+        return list3;
+    }
+
+    void rearrangeLinkedList() {
+        Node* prev = nullptr;
+        Node* cur = begin;
+
+        // set end to end of list
+        Node* end = begin;
+        while (end->next != nullptr) {
+            end = end->next;
+        }
+
+        Node* newEnd = end;
+        while (cur->data % 2 == 0 && cur != end) {
+            newEnd->next = cur;
+            cur = cur->next;
+
+            newEnd->next->next = nullptr;
+            newEnd = newEnd->next;
+        }
+
+        if (cur->data % 2 != 0) {
+            begin = cur;
+
+            while (cur != end) {
+                if (cur->data % 2 != 0) {
+                    prev = cur;
+                    cur = cur->next;
+                }
+                else {
+                    prev->next = cur->next;
+                    cur->next = nullptr;
+
+                    newEnd->next = cur;
+                    newEnd = cur;
+                    
+                    cur = prev->next;
+                }
+            }
+        }
+        else {
+            prev = cur;
+        }
+
+        if (newEnd != end && end->data % 2 == 0) {
+            prev->next = end->next;
+            end->next = nullptr;
+            newEnd->next = end;
         }
     }
 
-    void popBack() {
-        if (size > 0) {
-            size--;
+    void print() const {
+        if (count == 0) {
+            std::cout << "List is empty" << std::endl;
         }
-    }
-
-    void erase(size_t index) {
-        // create new array with elements before index
-        int* newArr = new T[capacity];
-        for (size_t i = 0; i < index; i++) {
-            newArr[i] = arr[i];
+        Node* cur = begin;
+        while (cur != nullptr) {
+            std::cout << cur->data << std::endl;
+            cur = cur->next;
         }
 
-        // put elements into erased index
-        for (size_t i = index; i < size; i++) {
-            newArr[i] = arr[i - 1];
-        }
-
-        delete[] arr;
-        arr = newArr;
-
-        size--;
     }
 };
 
+int main() {
+    // Create the first linked list: 1->3->5->7
+    LinkedList list1;
 
-int main()
-{
-    MyVector<int> vec; 
+    list1.insert(0, 1);
+    list1.insert(1, 3);
+    list1.insert(2, 5);
+    list1.insert(3, 7);
 
-    vec.pushBack(2);
-    vec.pushBack(3);
-    vec.pushBack(4);
-    vec.insert(3, 5);
-    vec.erase(3);
+    // Create the second linked list: 2->4->6->8
+    LinkedList list2;
 
-    for (int i = 0; i < vec.getSize(); i++) {
-        std::cout << vec[i] << std::endl;
-    }
+    list2.insert(0, 2);
+    list2.insert(1, 4);
+    list2.insert(2, 6);
+    list2.insert(3, 8);
 
+    // Merge the two sorted lists
+    LinkedList sortedList = list1.mergeSortedLists(list2);
+
+    // Print the merged list
+    std::cout << "Sorted List: " << std::endl;
+    sortedList.print();
+
+
+
+    // Create the linked list: 1 -> 2 -> 5 -> 8 -> 3 -> 6 -> 7 -> 4
+    LinkedList list3;
+
+    list3.insert(0, 1);
+    list3.insert(1, 2);
+    list3.insert(2, 5);
+    list3.insert(3, 8);
+    list3.insert(4, 3);
+    list3.insert(5, 6);
+    list3.insert(6, 7);
+    list3.insert(7, 4);
+
+    // Rearrange the list
+    list3.rearrangeLinkedList();
+
+    // Print the rearranged list
+    std::cout << "Rearranged List: " << std::endl;
+    list3.print();
 }
