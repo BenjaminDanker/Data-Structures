@@ -2,81 +2,79 @@
 #include <vector>
 #include <numeric>
 #include <stdexcept>
-#include <stack>
 
+struct Song {
+	std::string title;
+	std::string artist;
+	Song* next;
+};
 
-bool isParenthesesBalanced(std::string paren) {
-	std::stack<char> charStack;
+class PlayList {
+private:
+	Song* head;
+public:
+	PlayList() : head{ nullptr } {}
+	~PlayList() {
+		Song* del = head;
 
-	for (char x : paren) {
-		if (x == '(' or x == '<') {
-			charStack.push(x);
+		while (head != nullptr) {
+			head = head->next;
+			delete del;
+			del = head;
+		}
+	}
+
+	void addSong(std::string title, std::string artist) {
+		Song* newNode = new Song;
+		newNode->title = title;
+		newNode->artist = artist;
+		newNode->next = nullptr;
+
+		if (head == nullptr) {
+			newNode->next = head;
+			head = newNode;
 		}
 		else {
-			if (charStack.empty()) {
-				return false;
+			Song* cur = head;
+			while (cur->next != nullptr) {
+				cur = cur->next;
 			}
-			else if (x == ')' and charStack.top() != '(' or x == '>' and charStack.top() != '<') {
-				return false;
-			}
-			else {
-				charStack.pop();
-			}
+			cur->next = newNode;
 		}
 	}
 
-	if (charStack.empty() == true) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
+	void removeSong(std::string title) {
+		Song* cur = head;
 
-std::string decimalToHex(int number) {
-	std::stack<char> hexStack;
-	std::string hex;
-	int remainder;
-
-	while (number > 0) {
-		remainder = number % 16;
-		number /= 16;
-
-		if (remainder <= 10) {
-			hexStack.push(char(remainder));
+		while (cur->next->title != title) {
+			cur = cur->next;
 		}
-		else {
-			if (remainder == 11) {
-				hexStack.push('A');
-			}
-			else if (remainder == 12) {
-				hexStack.push('B');
-			}
-			else if (remainder == 13) {
-				hexStack.push('C');
-			}
-			else if (remainder == 14) {
-				hexStack.push('D');
-			}
-			else if (remainder == 15) {
-				hexStack.push('E');
-			}
-			else if (remainder == 16) {
-				hexStack.push('F');
-			}
+
+		cur->next = cur->next->next;
+
+	}
+
+	void displayPlaylist() const {
+		Song* cur = head;
+
+		while (cur != nullptr) {
+			std::cout << cur->title << " - " << cur->artist << std::endl;
+			cur = cur->next;
 		}
 	}
-
-	for (int i = 0; i < hexStack.size(); i++) {
-		hex += hexStack.top();
-		hexStack.pop();
-	}
-
-	return hex;
-}
+};
 
 int main() {
-	std::cout << isParenthesesBalanced("(<>)") << std::endl;
+	PlayList myPlaylist;
 
-	std::cout << decimalToHex(15) << std::endl;
+	myPlaylist.addSong("Song 1", "Artist 1");
+	myPlaylist.addSong("Song 2", "Artist 2");
+	myPlaylist.addSong("Song 3", "Artist 3");
+	myPlaylist.addSong("Song 4", "Artist 4");
+
+	myPlaylist.displayPlaylist();
+
+	myPlaylist.removeSong("Song 2");
+
+	myPlaylist.displayPlaylist();
 }
