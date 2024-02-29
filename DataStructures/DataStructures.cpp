@@ -2,123 +2,81 @@
 #include <vector>
 #include <numeric>
 #include <stdexcept>
+#include <stack>
 
 
-template <typename T>
-struct Node {
-    T data;
-    Node<T>* next;
-    Node<T>* prev;
-};
+bool isParenthesesBalanced(std::string paren) {
+	std::stack<char> charStack;
 
-template <typename T>
-class DoubleLinkedList {
-private:
-    Node<T>* begin;
-    Node<T>* end;
+	for (char x : paren) {
+		if (x == '(' or x == '<') {
+			charStack.push(x);
+		}
+		else {
+			if (charStack.empty()) {
+				return false;
+			}
+			else if (x == ')' and charStack.top() != '(' or x == '>' and charStack.top() != '<') {
+				return false;
+			}
+			else {
+				charStack.pop();
+			}
+		}
+	}
 
-    template <typename T>
-    Node<T>* makeNode(T value) {
-        Node<T>* newNode = new Node<T>;
+	if (charStack.empty() == true) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
-        newNode->data = value;
-        newNode->next = nullptr;
-        newNode->prev = nullptr;
+std::string decimalToHex(int number) {
+	std::stack<char> hexStack;
+	std::string hex;
+	int remainder;
 
-        return newNode;
-    }
-public:
-    DoubleLinkedList() : begin{ nullptr }, end{ nullptr } {}
+	while (number > 0) {
+		remainder = number % 16;
+		number /= 16;
 
-    ~DoubleLinkedList() {
-        Node<T>* del = begin;
+		if (remainder <= 10) {
+			hexStack.push(char(remainder));
+		}
+		else {
+			if (remainder == 11) {
+				hexStack.push('A');
+			}
+			else if (remainder == 12) {
+				hexStack.push('B');
+			}
+			else if (remainder == 13) {
+				hexStack.push('C');
+			}
+			else if (remainder == 14) {
+				hexStack.push('D');
+			}
+			else if (remainder == 15) {
+				hexStack.push('E');
+			}
+			else if (remainder == 16) {
+				hexStack.push('F');
+			}
+		}
+	}
 
-        while (begin != nullptr) {
-            begin = begin->next;
-            delete del;
-            del = begin;
-        }
-    }
+	for (int i = 0; i < hexStack.size(); i++) {
+		hex += hexStack.top();
+		hexStack.pop();
+	}
 
-    template <typename T>
-    void addBack(T value) {
-        Node<T>* newNode = makeNode(value);
-
-        if (begin == nullptr) {
-            begin = newNode;
-            end = newNode;
-        }
-        else {
-            newNode->prev = end;
-            end->next = newNode;
-            end = end->next;
-        }
-    }
-
-    template <typename T>
-    void addFront(T value) {
-        Node<T>* newNode = makeNode(value);
-
-        if (begin == nullptr) {
-            begin = newNode;
-            end = newNode;
-        }
-        else {
-            newNode->next = begin;
-            begin->prev = newNode;
-            begin = newNode;
-        }
-    }
-
-    void printForward() const {
-        Node<T>* cur = begin;
-        while (cur != nullptr) {
-            std::cout << cur->data << std::endl;
-            cur = cur->next;
-        }
-
-    }
-
-    void printBackward() const {
-        Node<T>* cur = end;
-        while (cur != nullptr) {
-            std::cout << cur->data << std::endl;
-            cur = cur->prev;
-        }
-    }
-};
+	return hex;
+}
 
 int main() {
-    DoubleLinkedList<int> list1;
+	std::cout << isParenthesesBalanced("(<>)") << std::endl;
 
-    list1.addFront(1);
-    list1.addFront(2);
-    list1.addFront(3);
-    list1.addBack(4);
-
-    list1.printForward();
-    std::cout << std::endl;
-    list1.printBackward();
-
-
-    std::cout << std::endl;
-
-
-    DoubleLinkedList<std::string> list2;
-
-    // compiler will assume (const char*) if passed in variables are not declared as string first no matter the length
-    std::string one = "1";
-    std::string two = "2";
-    std::string three = "3";
-    std::string four = "4";
-
-
-    list2.addFront(one);
-    list2.addFront(two);
-    list2.addFront(three);
-    list2.addBack(four);
-
-    list2.printForward();
-    std::cout << std::endl;
-    list2.printBackward();
+	std::cout << decimalToHex(15) << std::endl;
 }
