@@ -2,79 +2,59 @@
 #include <vector>
 #include <numeric>
 #include <stdexcept>
+#include <stack>
 
-struct Song {
-	std::string title;
-	std::string artist;
-	Song* next;
-};
+int precedence(char op)
+{
+    if (op == '+' || op == '-')
+        return 1;
+    if (op == '*' || op == '/')
+        return 2;
+    return 0;
+}
 
-class PlayList {
-private:
-	Song* head;
-public:
-	PlayList() : head{ nullptr } {}
-	~PlayList() {
-		Song* del = head;
+std::string infixToPostfix(const std::string& infix) {
+    std::stack<char> operatorsStack;
+    std::string postfix;
 
-		while (head != nullptr) {
-			head = head->next;
-			delete del;
-			del = head;
-		}
-	}
+    for (auto x : infix) {
+        if (x == ' ') {
+            continue;
+        }
+        if (isalnum(x)) {
+            postfix += x;
+        }
+        else if (x == '(') {
+            operatorsStack.push(x);
+        }
+        else if (x == ')') {
+            while (operatorsStack.top() != '(') {
+                postfix += operatorsStack.top();
+                operatorsStack.pop();
+            }
+            operatorsStack.pop();
+        }
+        else {
+            while (!operatorsStack.empty() and precedence(x) <= precedence(operatorsStack.top())) {
+                postfix += operatorsStack.top();
+                operatorsStack.pop();
+            }
+            operatorsStack.push(x);
+        }
+    }
+    while (!operatorsStack.empty()) {
+        postfix += operatorsStack.top();
+        operatorsStack.pop();
+    }
 
-	void addSong(std::string title, std::string artist) {
-		Song* newNode = new Song;
-		newNode->title = title;
-		newNode->artist = artist;
-		newNode->next = nullptr;
-
-		if (head == nullptr) {
-			newNode->next = head;
-			head = newNode;
-		}
-		else {
-			Song* cur = head;
-			while (cur->next != nullptr) {
-				cur = cur->next;
-			}
-			cur->next = newNode;
-		}
-	}
-
-	void removeSong(std::string title) {
-		Song* cur = head;
-
-		while (cur->next->title != title) {
-			cur = cur->next;
-		}
-
-		cur->next = cur->next->next;
-
-	}
-
-	void displayPlaylist() const {
-		Song* cur = head;
-
-		while (cur != nullptr) {
-			std::cout << cur->title << " - " << cur->artist << std::endl;
-			cur = cur->next;
-		}
-	}
-};
+    return postfix;
+}
 
 int main() {
-	PlayList myPlaylist;
+    //std::string infixExpression = "((A + B) - C * (D/E)) + F";
+    std::string infixExpression = "A + B * C + D";
+    std::string postfixExpression = infixToPostfix(infixExpression);
 
-	myPlaylist.addSong("Song 1", "Artist 1");
-	myPlaylist.addSong("Song 2", "Artist 2");
-	myPlaylist.addSong("Song 3", "Artist 3");
-	myPlaylist.addSong("Song 4", "Artist 4");
-
-	myPlaylist.displayPlaylist();
-
-	myPlaylist.removeSong("Song 2");
-
-	myPlaylist.displayPlaylist();
+    std::cout << "Infix Expression: " << infixExpression << std::endl;
+    std::cout << "Postfix Expression: " << postfixExpression << std::endl;
 }
