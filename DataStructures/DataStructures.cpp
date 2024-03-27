@@ -4,57 +4,134 @@
 #include <stdexcept>
 #include <stack>
 
-int precedence(char op)
-{
-    if (op == '+' || op == '-')
-        return 1;
-    if (op == '*' || op == '/')
-        return 2;
-    return 0;
-}
 
-std::string infixToPostfix(const std::string& infix) {
-    std::stack<char> operatorsStack;
-    std::string postfix;
+template <typename T>
+class CircularLinkedList {
+private:
+    struct Node {
+        T data;
+        Node* next;
 
-    for (auto x : infix) {
-        if (x == ' ') {
-            continue;
+        Node(const T& value) : data(value), next(nullptr) {}
+    };
+
+    Node* head;
+    Node* tail;
+    int size;
+
+public:
+    CircularLinkedList() : head(nullptr), tail(nullptr), size(0) {}
+
+    ~CircularLinkedList() {
+        while (!isEmpty()) {
+            removeFront();
         }
-        if (isalnum(x)) {
-            postfix += x;
-        }
-        else if (x == '(') {
-            operatorsStack.push(x);
-        }
-        else if (x == ')') {
-            while (operatorsStack.top() != '(') {
-                postfix += operatorsStack.top();
-                operatorsStack.pop();
-            }
-            operatorsStack.pop();
+    }
+
+    bool isEmpty() const {
+        if (size == 0) {
+            return true;
         }
         else {
-            while (!operatorsStack.empty() and precedence(x) <= precedence(operatorsStack.top())) {
-                postfix += operatorsStack.top();
-                operatorsStack.pop();
-            }
-            operatorsStack.push(x);
+            return false;
         }
     }
-    while (!operatorsStack.empty()) {
-        postfix += operatorsStack.top();
-        operatorsStack.pop();
+
+    int getSize() const {
+        return size;
     }
 
-    return postfix;
-}
+    void addFront(const T& item) {
+        Node* newNode = new Node(item);
+        newNode->next = head;
+ 
+        if (head != nullptr) {
+            Node* temp = head;
+            while (temp->next != head) {
+                temp = temp->next;
+            }
+            temp->next = newNode;
+        }
+        else {
+            newNode->next = newNode;
+            tail = newNode;
+        }
+        head = newNode;
+    }
+
+    void addBack(const T& item) {
+        Node* newNode = new Node(item);
+        if (head == nullptr) {
+            head = tail = newNode;
+            tail->next = head;
+        }
+        else {
+            tail->next = newNode;
+            tail = newNode;
+            tail->next = head;
+        }
+    }
+
+
+    void removeFront() {
+        tail->next = head->next;
+        delete head;
+        head = tail->next;
+    }
+
+
+    void removeBack() {
+        Node* temp = head;
+        while (temp->next != tail) {
+            temp = temp->next;
+        }
+        temp->next = head;
+        delete tail;
+        tail = temp;
+    }
+
+
+    void print() const {
+        Node* temp = head;
+        if (head != nullptr) {
+            do {
+                std::cout << temp->data;
+                if (temp->next != head) {
+                    std::cout << "->";
+                }
+                temp = temp->next;
+            } while (temp != head);
+        }
+        std::cout << std::endl;
+    }
+};
+
+template <typename T>
+class Queue {
+private:
+    CircularLinkedList<T> circularLinkedList;
+public:
+    void enqueue(const T& item) {
+        circularLinkedList.addBack(item);
+    }
+    void dequeue() {
+        circularLinkedList.removeFront();
+    }
+    void print() {
+        circularLinkedList.print();
+    }
+};
 
 int main() {
-    //std::string infixExpression = "((A + B) - C * (D/E)) + F";
-    std::string infixExpression = "A + B * C + D";
-    std::string postfixExpression = infixToPostfix(infixExpression);
+    Queue<int> queue;
 
-    std::cout << "Infix Expression: " << infixExpression << std::endl;
-    std::cout << "Postfix Expression: " << postfixExpression << std::endl;
+    queue.enqueue(1);
+    queue.enqueue(2);
+    queue.enqueue(3);
+    queue.print();
+
+    queue.dequeue();
+    queue.print();
+
+    return 0;
 }
