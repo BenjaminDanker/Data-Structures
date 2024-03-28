@@ -3,35 +3,49 @@
 #include <numeric>
 #include <stdexcept>
 #include <stack>
+#include <queue>
 
 
-bool isOperand(char x) {
-    return (x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z');
-}
+void deleteThirdElement(std::queue<int>& queue) {
+    std::queue<int> tempQueue;
+    int range = 1;
 
-std::string getInfix(std::string postfix) {
-    std::stack<std::string> stck;
-
-    for (int i = 0; postfix[i] != '\0'; i++) {
-        if (isOperand(postfix[i])) {
-            std::string op(1, postfix[i]);
-            stck.push(op);
-        }
-        else {
-            std::string op1 = stck.top();
-            stck.pop();
-            std::string op2 = stck.top();
-            stck.pop();
-            stck.push("(" + op2 + postfix[i] + op1 + ")");
-        }
+    for (int i = 0; i <= range; i++) {
+        tempQueue.push(queue.front());
+        queue.pop();
     }
-
-    return stck.top();
+    queue.pop();
+    for (int i = 0; i <= range; i++) {
+        queue.push(tempQueue.front());
+        tempQueue.pop();
+    }
 }
 
 int main() {
-    std::string postfix = "AB+CDE/*-F+";
-    std::cout << getInfix(postfix);
+    std::queue<int> queue;
+    queue.push(1);
+    queue.push(2);
+    queue.push(3);
+    queue.push(4);
+    queue.push(5);
+
+    std::queue<int> tempQueue = queue;
+    std::cout << "Original Queue: ";
+    while (!tempQueue.empty()) {
+        std::cout << tempQueue.front() << " ";
+        tempQueue.pop();
+    }
+    std::cout << std::endl;
+
+    deleteThirdElement(queue);
+
+    std::cout << "Modified Queue: ";
+    while (!queue.empty()) {
+        std::cout << queue.front() << " ";
+        queue.pop();
+    }
+    std::cout << std::endl;
+
 
     return 0;
 }
