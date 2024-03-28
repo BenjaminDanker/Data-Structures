@@ -6,16 +6,19 @@
 #include <queue>
 
 
-void deleteThirdElement(std::queue<int>& queue) {
+void deleteMiddleElement(std::queue<int>& queue, int range) {
     std::queue<int> tempQueue;
-    int range = 1;
 
-    for (int i = 0; i <= range; i++) {
+    for (int i = 0; i < range; i++) {
         tempQueue.push(queue.front());
         queue.pop();
     }
     queue.pop();
-    for (int i = 0; i <= range; i++) {
+    while (!queue.empty()) {
+        tempQueue.push(queue.front());
+        queue.pop();
+    }
+    while (!tempQueue.empty()) {
         queue.push(tempQueue.front());
         tempQueue.pop();
     }
@@ -37,7 +40,7 @@ int main() {
     }
     std::cout << std::endl;
 
-    deleteThirdElement(queue);
+    deleteMiddleElement(queue, 2);
 
     std::cout << "Modified Queue: ";
     while (!queue.empty()) {
