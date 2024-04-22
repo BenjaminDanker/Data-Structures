@@ -4,51 +4,90 @@
 #include <stdexcept>
 #include <stack>
 #include <queue>
+#include <unordered_map>
 
+// TODO: Huffman tree node
+struct Node {
+    char data;
+    int freq;
+    Node* left, * right;
+};
 
-void deleteMiddleElement(std::queue<int>& queue, int range) {
-    std::queue<int> tempQueue;
-
-    for (int i = 0; i < range; i++) {
-        tempQueue.push(queue.front());
-        queue.pop();
+// TODO: Comparison struct for priority queue
+struct CompareNodes {
+    bool operator()(Node* a, Node* b) {
+        return a->freq > b->freq;
     }
-    queue.pop();
-    while (!queue.empty()) {
-        tempQueue.push(queue.front());
-        queue.pop();
+};
+
+
+// TODO: Function to build the Huffman tree
+Node* buildHuffmanTree(std::priority_queue<Node*, std::vector<Node*>, CompareNodes> pq) {
+    while (pq.size() != 1) {
+        Node* left = pq.top();
+        pq.pop();
+
+        Node* right = pq.top();
+        pq.pop();
+
+
+        Node* node = new Node();
+        node->data = '$';
+        node->freq = left->freq + right->freq;
+        node->left = left;
+        node->right = right;
+
+        pq.push(node);
     }
-    while (!tempQueue.empty()) {
-        queue.push(tempQueue.front());
-        tempQueue.pop();
+
+    return pq.top();
+}
+
+void printCodes(Node* root, int arr[], int top) {
+    if (root->left) {
+        arr[top] = 0;
+        printCodes(root->left, arr, top + 1);
+    }
+
+    if (root->right) {
+        arr[top] = 1;
+        printCodes(root->right, arr, top + 1);
+    }
+
+    if (!root->left && !root->right) {
+        std::cout << root->data << " ";
+        for (int i = 0; i < top; i++) {
+            std::cout << arr[i];
+        }
+        std::cout << std::endl;
     }
 }
 
+// TODO: Function to perform Huffman coding on the input string
+// TODO: Function to perform Huffman decoding on the encoded string
+void HuffmanCodes(char data[], int freq[], int size) {
+    std::priority_queue<Node*, std::vector<Node*>, CompareNodes> pq;
+
+    for (int i = 0; i < size; i++) {
+        Node* newNode = new Node();
+        newNode->data = data[i];
+        newNode->freq = freq[i];
+
+        pq.push(newNode);
+    }
+
+    Node* root = buildHuffmanTree(pq);
+
+    int arr[100], top = 0;
+    printCodes(root, arr, top);
+}
+
+
 int main() {
-    std::queue<int> queue;
-    queue.push(1);
-    queue.push(2);
-    queue.push(3);
-    queue.push(4);
-    queue.push(5);
+    char data[] = {'A','B','C','D'};
+    int freq[] = {1,2,3,4};
+    int size = sizeof(data) / sizeof(data[0]);
 
-    std::queue<int> tempQueue = queue;
-    std::cout << "Original Queue: ";
-    while (!tempQueue.empty()) {
-        std::cout << tempQueue.front() << " ";
-        tempQueue.pop();
-    }
-    std::cout << std::endl;
-
-    deleteMiddleElement(queue, 2);
-
-    std::cout << "Modified Queue: ";
-    while (!queue.empty()) {
-        std::cout << queue.front() << " ";
-        queue.pop();
-    }
-    std::cout << std::endl;
-
-
+    HuffmanCodes(data, freq, size);
     return 0;
 }
